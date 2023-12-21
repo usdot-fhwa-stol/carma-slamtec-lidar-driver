@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#  Copyright (C) 2018-2021 LEIDOS.
+#  Copyright (C) 2023 LEIDOS.
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may not
 #  use this file except in compliance with the License. You may obtain a copy of
@@ -14,20 +14,39 @@
 #  License for the specific language governing permissions and limitations under
 #  the License.
 
-# Source the CARMA and ROS2 toolchains.
-source /opt/carma/install_ros2/setup.bash
+# Source ros2
+if [[ ! -z "$ROS2_PACKAGES" ]]; then
+    echo "Sourcing previous build for incremental build start point..."
+    source /opt/carma/install_ros2/setup.bash
+else
+    echo "Sourcing base image for full build..."
+    source /opt/ros/foxy/setup.bash
+fi
 
-# Change to our ROS2 workspace
-cd /home/carma
+# Don't proceed in Continuous Integration environment
+if [[ "$CI" == "true" ]]; then
+    exit
+fi
 
-# Install all required dependencies for the source code we pulled.
-sudo apt update
-rosdep update
-rosdep install --from-paths src --ignore-src -r -y
+# Build wrapper
+cd ~
+if [[ ! -z "$ROS2_PACKAGES" ]]; then
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-above $ROS2_PACKAGES
+else
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to slamtec_lidar_driver_wrapper driver_shutdown_ros2
+fi
 
-# Build everything we need for our drivers
-colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
-  --packages-up-to c1tenth_drivers
+# # Change to our ROS2 workspace
+# cd /home/carma
 
-# Add rosbridge
-sudo apt install ros-foxy-rosbridge-suite
+# # Install all required dependencies for the source code we pulled.
+# sudo apt update
+# rosdep update
+# rosdep install --from-paths src --ignore-src -r -y
+
+# # Build everything we need for our drivers
+# colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
+#   --packages-up-to slamtec_lidar_driver_wrapper
+
+# # Add rosbridge
+# sudo apt install ros-foxy-rosbridge-suite

@@ -15,9 +15,9 @@
  */
 
 #include <memory>
-#include "sllidar_ros2_driver_wrapper/ComposableNode.hpp"
+#include "slamtec_lidar_driver_wrapper/ComposableNode.hpp"
 
-namespace sllidar_ros2_driver_wrapper
+namespace slamtec_lidar_driver_wrapper
 {
     ComposableNode::ComposableNode(const rclcpp::NodeOptions &options)
         : CarmaLifecycleNode(options)
@@ -55,7 +55,7 @@ namespace sllidar_ros2_driver_wrapper
     carma_ros2_utils::CallbackReturn ComposableNode::handle_on_activate(const rclcpp_lifecycle::State &prev_state)
     {
         // Timer setup
-        timer_ = this->create_wall_timer(std::chrono::milliseconds(500), 
+        timer_ = this->create_wall_timer(std::chrono::milliseconds(config_.timer_callback), 
         std::bind(&ComposableNode::timer_callback, this));
 
         //Initialize timeout check
@@ -65,14 +65,14 @@ namespace sllidar_ros2_driver_wrapper
     }
 
     void ComposableNode::timer_callback(){
-        // rclcpp::Duration duration_since_last_update = this->now() - last_update_time_;
-        // if(duration_since_last_update.seconds() > config_.point_cloud_timeout){
-        //     throw std::invalid_argument("Point Cloud wait timed out");
-        // } 
+        rclcpp::Duration duration_since_last_update = this->now() - last_update_time_;
+        if(duration_since_last_update.seconds() > config_.point_cloud_timeout){
+            throw std::invalid_argument("Point Cloud wait timed out");
+        } 
     }
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
 
 // Register the component with class_loader
-RCLCPP_COMPONENTS_REGISTER_NODE(sllidar_ros2_driver_wrapper::ComposableNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(slamtec_lidar_driver_wrapper::ComposableNode)

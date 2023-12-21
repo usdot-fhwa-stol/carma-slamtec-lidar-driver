@@ -13,12 +13,17 @@ from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
 DRIVER_PARAM_FILE = os.path.join(
-  get_package_share_directory('sllidar_ros2_driver_wrapper'), 'config', 'sllidar_driver.params.yaml')
+  get_package_share_directory('slamtec_lidar_driver_wrapper'), 'config', 'driver_params.yaml')
 
 WRAPPER_PARAM_FILE = os.path.join(
-  get_package_share_directory('sllidar_ros2_driver_wrapper'), 'config', 'sllidar_wrapper.params.yaml')
+  get_package_share_directory('slamtec_lidar_driver_wrapper'), 'config', 'wrapper_params.yaml')
 
 def generate_launch_description():
+
+  # Declare the launch arguments
+  log_level = LaunchConfiguration('log_level')
+  declare_log_level_arg = DeclareLaunchArgument(
+      name ='log_level', default_value = 'DEBUG', description="Log level to print.", choices=["DEBUG","INFO","WARN","ERROR","FATAL"])
 
   # Arguments to this launch file.
   composable = DeclareLaunchArgument(
@@ -36,7 +41,7 @@ def generate_launch_description():
   # Note that the name must match the param file.
   converter_node = Node(
     name='sllidar_ros2_converter',
-    package='sllidar_ros2_driver_wrapper',
+    package='slamtec_lidar_driver_wrapper',
     executable='lidar_scan_to_point_cloud2',
     namespace='lidar',
     parameters=[DRIVER_PARAM_FILE],
@@ -44,8 +49,8 @@ def generate_launch_description():
 
   # If we want a regular node (composable:=false) then this is run.
   wrapper_node = Node(
-    name='sllidar_ros2_driver_wrapper',
-    package='sllidar_ros2_driver_wrapper',
+    name='slamtec_lidar_driver_wrapper',
+    package='slamtec_lidar_driver_wrapper',
     executable='sllidar_driver_wrapper_node',
     parameters=[WRAPPER_PARAM_FILE],
     namespace=GetCurrentNamespace(),
@@ -61,9 +66,9 @@ def generate_launch_description():
     condition=IfCondition(LaunchConfiguration("composable")),
     composable_node_descriptions=[
       ComposableNode(
-        name='sllidar_ros2_driver_wrapper',
-        package='sllidar_ros2_driver_wrapper',
-        plugin='sllidar_ros2_driver_wrapper::ComposableNode',
+        name='slamtec_lidar_driver_wrapper',
+        package='slamtec_lidar_driver_wrapper',
+        plugin='slamtec_lidar_driver_wrapper::ComposableNode',
         parameters=[WRAPPER_PARAM_FILE],
         extra_arguments=[{'use_intra_process_comms': True}],
       )

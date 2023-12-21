@@ -15,7 +15,7 @@
  */
 #include <memory>
 
-#include "sllidar_ros2_driver_wrapper/ComposableNode.hpp"
+#include "slamtec_lidar_driver_wrapper/ComposableNode.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv) {
@@ -23,7 +23,7 @@ int main(int argc, char ** argv) {
     rclcpp::init(argc, argv);
 
     // Create a new Node
-    auto node = std::make_shared<sllidar_ros2_driver_wrapper::ComposableNode>(rclcpp::NodeOptions());
+    auto node = std::make_shared<slamtec_lidar_driver_wrapper::ComposableNode>(rclcpp::NodeOptions());
 
     // We use the multi threaded executor here to support the rentrent callbacks of the ros2_lifecycle_manager
     rclcpp::executors::MultiThreadedExecutor executor;    

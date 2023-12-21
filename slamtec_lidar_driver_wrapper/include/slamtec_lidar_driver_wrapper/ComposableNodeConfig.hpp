@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 
-namespace sllidar_ros2_driver_wrapper
+namespace slamtec_lidar_driver_wrapper
 {
     /**
   * \brief Stuct containing the algorithm configuration values for the lidar driver
@@ -42,4 +42,4 @@ namespace sllidar_ros2_driver_wrapper
         }
 
     };
-}//namespace sllidar_ros2_driver_wrapper
+}//namespace slamtec_lidar_driver_wrapper

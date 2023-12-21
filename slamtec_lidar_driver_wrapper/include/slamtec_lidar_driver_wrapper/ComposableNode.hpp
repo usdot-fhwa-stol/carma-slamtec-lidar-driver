@@ -21,10 +21,10 @@
 // CARMA includes
 #include <carma_ros2_utils/carma_lifecycle_node.hpp>
 
-// This projetc includes
-#include "sllidar_ros2_driver_wrapper/ComposableNodeConfig.hpp"
+// This project includes
+#include "slamtec_lidar_driver_wrapper/ComposableNodeConfig.hpp"
 
-namespace sllidar_ros2_driver_wrapper
+namespace slamtec_lidar_driver_wrapper
 {
     class ComposableNode : public carma_ros2_utils::CarmaLifecycleNode
     {

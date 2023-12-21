@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#  Copyright (C) 2018-2021 LEIDOS.
+#  Copyright (C) 2023 LEIDOS.
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may not
 #  use this file except in compliance with the License. You may obtain a copy of
@@ -19,18 +19,23 @@
 
 set -exo pipefail
 
-# Move to our source directory
-cd /home/carma/src
+dir=~
+while [[ $# -gt 0 ]]; do
+      arg="$1"
+      case $arg in
+            -d|--develop)
+                  BRANCH=develop
+                  shift
+            ;;
+            -r|--root)
+                  dir=$2
+                  shift
+                  shift
+            ;;
+      esac
+done
 
-# # Check out a serial dependency
-# git clone --depth=1 https://github.com/KBR-CARMA/transport_drivers.git --branch c1tenth-develop
+git clone --depth=1 https://github.com/Slamtec/sllidar_ros2 ${dir}/src/sllidar_ros2 --branch main
 
-# Check out all the drivers
-# git clone --depth=1 https://github.com/KBR-CARMA/vesc.git --branch c1tenth-develop
-git clone --depth=1 https://github.com/KBR-CARMA/sllidar_ros2.git --branch c1tenth-develop
-# git clone --depth=1 https://github.com/KBR-CARMA/dwm1001_ros2.git --branch c1tenth-develop
-
-# # TODO(asymingt) - fix the IMU problem from a recent commit.
-# git clone https://github.com/KBR-CARMA/bno055.git --branch c1tenth-develop
-# cd bno055
-# git checkout -b tmp b2eeb34413ddd77e57020b22875dbd3bedfacfb9
+git clone https://github.com/usdot-fhwa-stol/carma-msgs.git ${dir}/src/CARMAMsgs --branch develop
+git clone https://github.com/usdot-fhwa-stol/carma-utils.git ${dir}/src/CARMAUtils --branch develop

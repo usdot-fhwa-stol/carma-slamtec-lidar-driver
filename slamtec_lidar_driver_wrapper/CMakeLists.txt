@@ -13,7 +13,7 @@
 # the License.
 
 cmake_minimum_required(VERSION 3.5)
-project(sllidar_ros2_driver_wrapper)
+project(slamtec_lidar_driver_wrapper)
 
 find_package(carma_cmake_common REQUIRED)
 carma_check_ros_version(2)
@@ -36,7 +36,7 @@ ament_auto_add_executable(sllidar_driver_wrapper_node
 
 # Register component
 rclcpp_components_register_nodes(sllidar_driver_wrapper_composable_node
-  "sllidar_ros2_driver_wrapper::ComposableNode")
+  "slamtec_lidar_driver_wrapper::ComposableNode")
 
 target_link_libraries(sllidar_driver_wrapper_node
   sllidar_driver_wrapper_composable_node)

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>sllidar_ros2_driver_wrapper</name>
+  <name>slamtec_lidar_driver_wrapper</name>
   <version>1.0.0</version>
   <description>CARMA lidar driver wrapper package</description>
   <maintainer email="carma@dot.gov">carma</maintainer>
