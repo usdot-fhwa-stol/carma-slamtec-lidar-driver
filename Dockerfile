@@ -40,7 +40,7 @@ LABEL org.label-schema.vcs-url="https://github.com/usdot-fhwa-stol/carma-slamtec
 LABEL org.label-schema.vcs-ref=${VCS_REF}
 LABEL org.label-schema.build-date=${BUILD_DATE}
 
-COPY --from=setup /home/carma/install /opt/carma/install
+COPY --from=setup /home/carma/install /opt/carma/install_ros2
 # Copy dependencies installed
 COPY --from=setup /opt/ros/foxy /opt/ros/foxy
 

@@ -33,57 +33,38 @@ def generate_launch_description():
     # Declare the launch arguments
     log_level = LaunchConfiguration('log_level')
     declare_log_level_arg = DeclareLaunchArgument(
-        name ='log_level', default_value = 'DEBUG', description="Log level to print.", choices=["DEBUG","INFO","WARN","ERROR","FATAL"])
+        name ='log_level', default_value = 'DEBUG', description = "Log level to print.", choices=["DEBUG","INFO","WARN","ERROR","FATAL"])
 
     # Args for driver
     frame_id = LaunchConfiguration('frame_id')
     declare_frame_id = DeclareLaunchArgument(name = 'frame_id', default_value = "slamtec", description="The frame id to use for the scan data")
 
     serial_port = LaunchConfiguration('serial_port')
-    declare_serial_port = DeclareLaunchArgument(name = 'serial_port', default_value='/dev/sensors/rplidar', description="Serial port of the device")
+    declare_serial_port = DeclareLaunchArgument(name = 'serial_port', default_value = '/dev/sensors/rplidar', description="Serial port of the device")
 
     serial_baudrate = LaunchConfiguration('serial_baudrate')
-    declare_serial_baudrate = DeclareLaunchArgument(name = 'serial_baudrate', default_value=256000, description='Baud rate for serial communication')
+    declare_serial_baudrate = DeclareLaunchArgument(name = 'serial_baudrate', default_value = '256000', description='Baud rate for serial communication')
 
     inverted = LaunchConfiguration('inverted')
-    declare_inverted = DeclareLaunchArgument(name = 'inverted', default_value=False, description="True to flip the scan if the lidar is upside down")
+    declare_inverted = DeclareLaunchArgument(name = 'inverted', default_value = 'False', description="True to flip the scan if the lidar is upside down")
 
     angle_compensate = LaunchConfiguration('angle_compensate')
-    declare_angle_compensate = DeclareLaunchArgument(name = 'angle_compensate', default_value = True)
+    declare_angle_compensate = DeclareLaunchArgument(name = 'angle_compensate', default_value = 'True')
 
     # Args for Pointcloud
-    slamtec_pointcloud_pkg = get_package_share_directory('slamtec_pointcloud')
+    slamtec_lidar_driver_wrapper_pkg = get_package_share_directory('slamtec_lidar_driver_wrapper')
+    sllidar_ros2_pkg = get_package_share_directory('sllidar_ros2')
 
-    organize_cloud = LaunchConfiguration('organize_cloud')
-    declare_organize_cloud = DeclareLaunchArgument(name ='organize_cloud', default_value = 'False')
-
-    # # Define slamtec ROS2 driver node along with pointcloud converter
-    # slamtec_pointcloud_group = GroupAction(
-    #     actions = [
-    #         set_remap.SetRemap('slamtec_points','lidar/points_raw'),
-    #         IncludeLaunchDescription(
-    #             PythonLaunchDescriptionSource(['/', slamtec_pointcloud_pkg, '/launch', '/slamtec_convert_node-VLP32C-launch.py']),
-    #             launch_arguments={'organize_cloud':organize_cloud}.items()
-    #         ),
-    #     ]
-    # )
-
-     #  Get parameter file path
+    #  Get parameter file path
     param_file_path = os.path.join(
         get_package_share_directory('slamtec_lidar_driver_wrapper'), 'config/parameters.yaml')
 
-    slamtec_driver_container = ComposableNodeContainer(
-        name='slamtec_driver_container',
-        namespace=GetCurrentNamespace(),
-        package='rclcpp_components',
-        executable='component_container',
-        composable_node_descriptions=[
-            ComposableNode(
-                package='sllidar_ros2_driver',
-				executable='sllidar_node',
-                name='slamtec_driver_node',
-                namespace=GetCurrentNamespace(),
-                parameters = [
+    # Define Slamtec ROS2 driver
+    slamtec_driver_group = GroupAction(
+        actions = [
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(['/', sllidar_ros2_pkg, '/launch', '/sllidar_s1_launch.py']),
+                launch_arguments = [
                     {'frame_id' : frame_id},
                     {'serial_port' : serial_port},
                     {'serial_baudrate' : serial_baudrate},
@@ -91,9 +72,31 @@ def generate_launch_description():
                     {'angle_compensate' : angle_compensate}
                 ]
             ),
+        ]
+    )
+
+    # Launch node(s) in a carma container to allow logging to be configured
+    slamtec_lidar_wrapper_container = ComposableNodeContainer(
+        package='carma_ros2_utils',
+        name='slamtec_lidar_driver_wrapper_container',
+        namespace=GetCurrentNamespace(),
+        executable='carma_component_container_mt',
+        composable_node_descriptions=[
+            # Launch the core node(s)
+            ComposableNode(
+				package='slamtec_lidar_driver_wrapper',
+				plugin='slamtec_lidar_driver_wrapper::ComposableNode',
+				name='slamtec_lidar_driver_wrapper',
+                namespace=GetCurrentNamespace(),
+                extra_arguments=[
+                    {'use_intra_process_comms': True},
+                    {'--log-level' : log_level }
+                ],
+                parameters=[ param_file_path ]
+            ),
             ComposableNode(
                 package='slamtec_lidar_driver_wrapper',
-				executable='lidar_scan_to_point_cloud2',
+				plugin='slamtec_lidar_driver_wrapper::lidar_scan_to_point_cloud2',
                 name='slamtec_convertor_node',
                 namespace=GetCurrentNamespace(),
                 parameters = [
@@ -107,64 +110,15 @@ def generate_launch_description():
         ]
     )
 
-    # slamtec_convertor_container = ComposableNodeContainer(
-    #     name='slamtec_convertor_container',
-    #     namespace=GetCurrentNamespace(),
-    #     package='rclcpp_components',
-    #     executable='component_container',
-    #     composable_node_descriptions=[
-    #         ComposableNode(
-    #             package='slamtec_lidar_driver_wrapper',
-	# 			executable='lidar_scan_to_point_cloud2',
-    #             name='slamtec_convertor_node',
-    #             parameters = [
-    #                 {'frame_id' : frame_id},
-    #                 {'serial_port' : serial_port},
-    #                 {'serial_baudrate' : serial_baudrate},
-    #                 {'inverted' : inverted},
-    #                 {'angle_compensate' : angle_compensate}
-    #             ]
-    #         )
-    #     ]
-    # )
-
-    # Launch node(s) in a carma container to allow logging to be configured
-    slamtec_lidar_wrapper_container = ComposableNodeContainer(
-        package='carma_ros2_utils',
-        name='slamtec_lidar_driver_wrapper_container',
-        namespace=GetCurrentNamespace(),
-        executable='carma_component_container_mt',
-        composable_node_descriptions=[
-            
-            # Launch the core node(s)
-            ComposableNode(
-				package='slamtec_lidar_driver_wrapper',
-				plugin='slamtec_lidar_driver_wrapper::ComposableNode',
-				name='slamtec_lidar_driver_wrapper',
-                namespace=GetCurrentNamespace(),
-                extra_arguments=[
-                    {'use_intra_process_comms': True},
-                    {'--log-level' : log_level }
-                ],
-                parameters=[ param_file_path ]
-            ),
-        ]
-    )
-
     return LaunchDescription([
         # Specify Args
         declare_log_level_arg,
         declare_frame_id,
-        declare_inverted,
         declare_serial_port,
-        declare_port,
         declare_serial_baudrate,
+        declare_inverted,
         declare_angle_compensate,
-        declare_gps_time,
-        # Pointcloud args
-        declare_organize_cloud,
         # Specify Nodes
-        slamtec_pointcloud_group,
-        slamtec_driver_container,
+        slamtec_driver_group,
         slamtec_lidar_wrapper_container
     ])
