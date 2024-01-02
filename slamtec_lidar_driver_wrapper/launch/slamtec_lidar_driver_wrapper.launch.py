@@ -64,13 +64,13 @@ def generate_launch_description():
         actions = [
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(['/', sllidar_ros2_pkg, '/launch', '/sllidar_s1_launch.py']),
-                launch_arguments = [
-                    {'frame_id' : frame_id},
-                    {'serial_port' : serial_port},
-                    {'serial_baudrate' : serial_baudrate},
-                    {'inverted' : inverted},
-                    {'angle_compensate' : angle_compensate}
-                ]
+                launch_arguments = {
+                    'frame_id' : frame_id,
+                    'serial_port' : serial_port,
+                    'serial_baudrate' : serial_baudrate,
+                    'inverted' : inverted,
+                    'angle_compensate' : angle_compensate
+                }.items()
             ),
         ]
     )
